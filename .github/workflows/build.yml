@@ -11,19 +11,21 @@ jobs:
       - name: Unzip project
         run: |
           unzip -q VoicePower-final.zip
+          cp PowerService.kt VoicePower/app/src/main/java/com/voicepower/PowerService.kt
           ls -la VoicePower
-      cp PowerService.kt VoicePower/app/src/main/java/com/voicepower/PowerService.kt
+      - uses: actions/setup-java@v5
+        with:
           distribution: temurin
           java-version: 17
-      - uses: android-actions/setup-android@v4
+      - uses: android-actions/setup-android@v3
         continue-on-error: true
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.7
       - name: Build debug APK
         working-directory: VoicePower
-        run: gradle assembleDebug --no-daemon --stacktrace
-      - uses: actions/upload-artifact@v7
+        run: gradle assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
         with:
           name: VoicePower-apk
           path: VoicePower/app/build/outputs/apk/debug/app-debug.apk
