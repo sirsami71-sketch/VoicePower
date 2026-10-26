@@ -12,8 +12,7 @@ jobs:
         run: |
           unzip -q VoicePower-final.zip
           ls -la VoicePower
-      - uses: actions/setup-java@v5
-        with:
+      cp PowerService.kt VoicePower/app/src/main/java/com/voicepower/PowerService.kt
           distribution: temurin
           java-version: 17
       - uses: android-actions/setup-android@v4
