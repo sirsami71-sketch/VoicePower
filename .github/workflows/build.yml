@@ -12,8 +12,16 @@ jobs:
         run: |
           unzip -q VoicePower-final.zip
           ls -la VoicePower
-      - name: Firebase config
-        run: cp google-services.json VoicePower/app/
+      - name: Add service account
+        env:
+          SA_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT }}
+        run: |
+          mkdir -p VoicePower/app/src/main/assets
+          if [ -f sa.json ]; then
+            cp sa.json VoicePower/app/src/main/assets/sa.json
+          elif [ -n "$SA_JSON" ]; then
+            printf '%s' "$SA_JSON" > VoicePower/app/src/main/assets/sa.json
+          fi
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
