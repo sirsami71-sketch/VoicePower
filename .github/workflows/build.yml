@@ -12,6 +12,8 @@ jobs:
         run: |
           unzip -q VoicePower-final.zip
           ls -la VoicePower
+      - name: Firebase config
+        run: cp google-services.json VoicePower/app/
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
