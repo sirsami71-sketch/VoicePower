@@ -8,10 +8,28 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-      - name: Unzip project
+        with:
+          fetch-depth: 0
+
+      - name: Unzip latest project zip
         run: |
-          unzip -q VoicePower-final.zip
+          ZIP=$(for f in *.zip; do
+            [ -e "$f" ] || continue
+            echo "$(git log -1 --format=%ct -- "$f") $f"
+          done | sort -rn | head -n 1 | cut -d' ' -f2-)
+          if [ -z "$ZIP" ]; then
+            echo "কোনো zip ফাইল পাওয়া যায়নি"; exit 1
+          fi
+          echo "Using: $ZIP"
+          rm -rf VoicePower
+          unzip -q "$ZIP"
           ls -la VoicePower
+
+      - name: Bump versionCode
+        run: |
+          sed -i -E "s/versionCode = [0-9]+/versionCode = ${{ github.run_number }}/" VoicePower/app/build.gradle.kts
+          grep versionCode VoicePower/app/build.gradle.kts
+
       - name: Add service account
         env:
           SA_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT }}
@@ -22,19 +40,24 @@ jobs:
           elif [ -n "$SA_JSON" ]; then
             printf '%s' "$SA_JSON" > VoicePower/app/src/main/assets/sa.json
           fi
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
+
       - uses: android-actions/setup-android@v3
         continue-on-error: true
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.7
+
       - name: Build debug APK
         working-directory: VoicePower
         run: gradle assembleDebug --no-daemon
+
       - uses: actions/upload-artifact@v4
         with:
-          name: VoicePower-apk
+          name: VoicePower-apk-${{ github.run_number }}
           path: VoicePower/app/build/outputs/apk/debug/app-debug.apk
